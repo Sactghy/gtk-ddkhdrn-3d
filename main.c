@@ -3,14 +3,14 @@
 #include <gtk/gtk.h>
 
 GdkPixbuf *pixels;
-GtkWidget *sld_R, *sld_G, *sld_B, *sld_X, *sld_Y, *chk_X, *chk_Y, *chk_Z;
-guchar *pix, rr = 64, gg = 64, bb = 64, oqins = 168;
+GtkWidget *sld_R, *sld_G, *sld_B, *sld_X, *sld_Y, *chk_X, *chk_Y, *chk_Z, *swch0, *swch1;
+guchar *pix, oqins = 168;
 double cx = 0.998629534755, sy = 0.052335956243, phi = 1.618033988749, dds = 99.0, df = 0.0,
        cx1 = 0.992546151641, sy1 = 0.121869343405, c90 = 0.0, s90 = 1.0, lln = 235.0,
-       xshape = 1.0, scale = 900.00, scc = 0, scl = 300.0,
+       xshape = 1.0, scale = 900.00, scc = 0, scl = 300.0, rr = 1, gg = 1, bb = 1,
        ca = 0, sa = 0, cb = 0, sb = 0, cq = 0, sq = 0, anX = 0, anY = 0, anZ = 0;
 bool r_x = true, r_y = true, r_z = true, _x = true, _y = true, _z = true,
-     _x_ = true, _y_ = true, _z_ = true;
+     _x_ = true, _y_ = true, _z_ = true, swst = true;
 
 struct Point2D { int mx,my,mz; bool is_visible; };
 struct Point3D { double mx,my,mz; unsigned char b,g,r; bool is_visible; };
@@ -45,7 +45,7 @@ void jLine( struct Point2D *a, struct Point2D *b, guchar msk )
 
    int add = 0, slope = 9999, rmd = 6666, pos = 0, kx = 0, ky = 0;
 
-   guchar clr = (guchar)( ( ( a->mz + b->mz ) / 36 ) + 169 );
+   guchar cR = (double)(255) * ( 1 - rr ), cG = (double)(255) * ( 1 - gg ), cB = (double)(255) * ( 1 - bb );
 
    double sl = 0, ss = 0;
 
@@ -61,7 +61,7 @@ void jLine( struct Point2D *a, struct Point2D *b, guchar msk )
 
    guchar *p = pix + ( ( a->my + ( ky * add ) ) * 700 + a->mx + ( kx * i ) ) * 4;
 
-   if ( ( p[3] < 253 ) ) { p[0] = clr; p[1] = clr; p[2] = clr; p[3] = msk; } } }
+   if ( ( p[3] < 253 ) ) { p[0] = cR; p[1] = cG; p[2] = cB; p[3] = msk; } } }
 
    else { if ( dx != 0 ) { sl = (double)(dy) / (double)(dx); slope = dy / dx;  ss = sl; rmd = slope; }
 
@@ -71,7 +71,7 @@ void jLine( struct Point2D *a, struct Point2D *b, guchar msk )
 
    guchar *p = pix + ( ( a->my + ( ky * i ) ) * 700 + a->mx + ( kx * add ) ) * 4;
 
-   if ( ( p[3] < 253 ) ) { p[0] = clr; p[1] = clr; p[2] = clr;  p[3] = msk; } } } }
+   if ( ( p[3] < 253 ) ) { p[0] = cR; p[1] = cG; p[2] = cB;  p[3] = msk; } } } }
 
 }
 
@@ -147,11 +147,10 @@ static void chkVChng( GtkCheckButton* self )
 
 static gboolean sldVChng( GtkRange* self, gdouble value )
 {
-    //printf("%f \n", value ); fflush(stdout);
 
-    if ( (long int) self == (long int) sld_R ) { rr = value; return false; }
-    if ( (long int) self == (long int) sld_G ) { gg = value; return false; }
-    if ( (long int) self == (long int) sld_B ) { bb = value; return false; }
+    if ( (long int) self == (long int) sld_R ) { rr = value / 100.0; return false; }
+    if ( (long int) self == (long int) sld_G ) { gg = value / 100.0; return false; }
+    if ( (long int) self == (long int) sld_B ) { bb = value / 100.0; return false; }
     if ( (long int) self == (long int) sld_Y ) { xshape = ( value ) / 100; return false; }
     if ( (long int) self == (long int) sld_X ) {
 
@@ -238,15 +237,44 @@ static gboolean sldVChng( GtkRange* self, gdouble value )
     return false;
 }
 
+
 static gboolean drawFrame( GtkWidget *widget, GdkFrameClock *fclock, gpointer udata )
 {
+    gboolean issw0 = gtk_switch_get_state ( GTK_SWITCH (swch0) ),
+             issw1 = gtk_switch_get_state ( GTK_SWITCH (swch1) );
+
+    if ( issw0 ) { if ( swst ) { if ( issw1 ) gtk_widget_set_state_flags( GTK_WIDGET (swch1), GTK_STATE_FLAG_CHECKED, 1);
+                                 else gtk_widget_set_state_flags( GTK_WIDGET (swch1), GTK_STATE_FLAG_NORMAL, 1);
+
+            swst = !swst; }
+     if ( issw1 ) {
     for ( int x = 0; x < 700; x++ ) { for ( int y = 0; y < 700; y++ ) {
         guchar *p = pix + y * 2800 + x * 4;
-        p[0] = rr;
-        p[1] = gg;
-        p[2] = bb;
+        p[0] = (double)( p[0] + ( rand() & 0b00001111 ) ) * rr; //r0;
+        p[1] = (double)( p[1] + ( rand() & 0b00001111 ) ) * gg; //g0;
+        p[2] = (double)( p[2] + ( rand() & 0b00001111 ) ) * bb; //b0;
         p[3] = 252;
-    } }
+    } } } else {     for ( int x = 0; x < 700; x++ ) { for ( int y = 0; y < 700; y++ ) {
+                 guchar *p = pix + y * 2800 + x * 4;
+                 p[0] = (double)( p[0] + ( rand() & 0b00001111 ) );
+                 p[1] = (double)( p[1] + ( rand() & 0b00001111 ) );
+                 p[2] = (double)( p[2] + ( rand() & 0b00001111 ) );
+                 p[3] = 252;
+             } }
+
+     }
+
+    }
+
+    else {    if ( !swst ) { gtk_widget_set_state_flags( GTK_WIDGET (swch1), GTK_STATE_FLAG_INSENSITIVE, 0); swst = !swst; }
+                for ( int x = 0; x < 700; x++ ) { for ( int y = 0; y < 700; y++ ) {
+                guchar *p = pix + y * 2800 + x * 4; 
+                double r0 = 169 * rr; p[0] = r0;
+                double g0 = 128 * gg; p[1] = g0;
+                double b0 = 255 * bb; p[2] = b0;
+                p[3] = 252; } }
+
+         }
 
     //printf("%i -\n", aa); fflush( stdout );
 
@@ -337,46 +365,46 @@ static gboolean drawFrame( GtkWidget *widget, GdkFrameClock *fclock, gpointer ud
 
     if ( dds != 99 ) {
 
-        jLine( &a2dd[0], &a2bd[0], 128 );   jLine( &a2dd[12], &a2bd[12], 128 ); jLine( &a2dd[1], &a2bd[1], 128 );
-        jLine( &a2dd[18], &a2bd[18], 128 ); jLine( &a2dd[16], &a2bd[16], 128 ); jLine( &a2dd[4], &a2bd[4], 128 );
-        jLine( &a2dd[14], &a2bd[14], 128 ); jLine( &a2dd[5], &a2bd[5], 128 );   jLine( &a2dd[17], &a2bd[17], 128);
-        jLine( &a2dd[19], &a2bd[19], 128 ); jLine( &a2dd[2], &a2bd[2], 128 );   jLine( &a2dd[3], &a2bd[3], 128 );
-        jLine( &a2dd[13], &a2bd[13], 128 ); jLine( &a2dd[16], &a2cd[16], 128 ); jLine( &a2dd[18], &a2cd[18], 128 );
-        jLine( &a2dd[6], &a2bd[6], 128 );   jLine( &a2dd[7], &a2bd[7], 128 );   jLine( &a2dd[15], &a2bd[15], 128 );
-        jLine( &a2dd[17], &a2cd[17], 128 ); jLine( &a2dd[19], &a2cd[19], 128 ); jLine( &a2dd[8], &a2bd[8], 128 );
-        jLine( &a2dd[4], &a2cd[4], 128 );   jLine( &a2dd[0], &a2cd[0], 128 );   jLine( &a2dd[12], &a2cd[12], 128 );
-        jLine( &a2dd[14], &a2cd[14], 128 ); jLine( &a2dd[6], &a2cd[6], 128 );   jLine( &a2dd[10], &a2bd[10], 128 );
-        jLine( &a2dd[2], &a2cd[2], 128 );   jLine( &a2dd[13], &a2cd[13], 128 ); jLine( &a2dd[15], &a2cd[15], 128 );
-        jLine( &a2dd[5], &a2cd[5], 128 );  jLine( &a2dd[9], &a2bd[9], 128 );   jLine( &a2dd[1], &a2cd[1], 128 );
-        jLine( &a2dd[12], &a2ed[12], 128 ); jLine( &a2dd[14], &a2ed[14], 128 ); jLine( &a2dd[7], &a2cd[7], 128 );
-        jLine( &a2dd[11], &a2bd[11], 128 ); jLine( &a2dd[3], &a2cd[3], 128 );   jLine( &a2dd[13], &a2ed[13], 128 );
-        jLine( &a2dd[15], &a2ed[15], 128 ); jLine( &a2dd[0], &a2ed[0], 128 );   jLine( &a2dd[16], &a2ed[16], 128 );
-        jLine( &a2dd[2], &a2ed[2], 128 );   jLine( &a2dd[10], &a2cd[10], 128 ); jLine( &a2dd[8], &a2cd[8], 128 );
-        jLine( &a2dd[4], &a2ed[4], 128 );   jLine( &a2dd[17], &a2ed[17], 128 ); jLine( &a2dd[6], &a2ed[6], 128 );
-        jLine( &a2dd[10], &a2ed[10], 128 ); jLine( &a2dd[8], &a2ed[8], 128 );   jLine( &a2dd[1], &a2ed[1], 128 );
-        jLine( &a2dd[3], &a2ed[3], 128 );   jLine( &a2dd[18], &a2ed[18], 128 ); jLine( &a2dd[11], &a2cd[11], 128 );
-        jLine( &a2dd[9], &a2cd[9], 128 );   jLine( &a2dd[5], &a2ed[5], 128 );   jLine( &a2dd[7], &a2ed[7], 128 );
-        jLine( &a2dd[9], &a2ed[9], 128 );   jLine( &a2dd[11], &a2ed[11], 128 ); jLine( &a2dd[19], &a2ed[19], 128 );
-        jLine( &a2bd[0], &a2bd[12], 128 ); jLine( &a2bd[12], &a2bd[1], 128 ); jLine( &a2bd[1], &a2bd[18], 128 );
-        jLine( &a2bd[18],&a2bd[16], 128 ); jLine( &a2bd[16], &a2bd[0], 128 ); jLine( &a2bd[4], &a2bd[14], 128 );
-        jLine( &a2bd[14],&a2bd[5], 128 );  jLine( &a2bd[5], &a2bd[19], 128 ); jLine( &a2bd[19],&a2bd[17], 128 );
-        jLine( &a2bd[17],&a2bd[4], 128 );  jLine( &a2bd[3], &a2bd[13], 128 ); jLine( &a2bd[13], &a2bd[2], 128 );
-        jLine( &a2bd[2], &a2cd[16], 128 ); jLine( &a2cd[16], &a2cd[18], 128); jLine( &a2cd[18], &a2bd[3], 128 );
-        jLine( &a2bd[7], &a2bd[15], 128 ); jLine( &a2bd[15], &a2bd[6], 128 ); jLine( &a2bd[6], &a2cd[17], 128 );
-        jLine( &a2cd[17], &a2cd[19], 128); jLine( &a2cd[19], &a2bd[7], 128 ); jLine( &a2cd[4], &a2bd[8] , 128 );
-        jLine( &a2bd[8],  &a2cd[0], 128 ); jLine( &a2cd[0], &a2cd[12], 128 ); jLine( &a2cd[12], &a2cd[14], 128);
-        jLine( &a2cd[14], &a2cd[4], 128 ); jLine( &a2cd[6], &a2bd[10], 128 ); jLine( &a2bd[10], &a2cd[2], 128 );
-        jLine( &a2cd[2], &a2cd[13], 128 ); jLine( &a2cd[13],&a2cd[15], 128 ); jLine( &a2cd[15], &a2cd[6], 128 );
-        jLine( &a2cd[5], &a2bd[9], 128  ); jLine( &a2bd[9],  &a2cd[1], 128 ); jLine( &a2cd[1], &a2ed[12], 128 );
-        jLine( &a2ed[12], &a2ed[14], 128); jLine( &a2ed[14], &a2cd[5], 128 ); jLine( &a2cd[7], &a2bd[11], 128 );
-        jLine( &a2bd[11], &a2cd[3], 128 ); jLine( &a2cd[3], &a2ed[13], 128 ); jLine( &a2ed[13], &a2ed[15], 128);
-        jLine( &a2ed[15], &a2cd[7], 128 ); jLine( &a2ed[0], &a2ed[16], 128 ); jLine( &a2ed[16], &a2ed[2], 128 );
-        jLine( &a2ed[2], &a2cd[10], 128 ); jLine( &a2cd[10], &a2cd[8], 128 ); jLine( &a2cd[8], &a2ed[0] , 128 );
-        jLine( &a2ed[4], &a2ed[17], 128 ); jLine( &a2ed[17], &a2ed[6], 128 ); jLine( &a2ed[6], &a2ed[10], 128 );
-        jLine( &a2ed[10], &a2ed[8], 128); jLine( &a2ed[8],  &a2ed[4], 128 ); jLine( &a2ed[1], &a2ed[18], 128 );
-        jLine( &a2ed[18], &a2ed[3], 128 ); jLine( &a2ed[3], &a2cd[11], 128 ); jLine( &a2cd[11], &a2cd[9], 128 );
-        jLine( &a2cd[9], &a2ed[1], 128  ); jLine( &a2ed[5], &a2ed[19], 128); jLine( &a2ed[19], &a2ed[7], 128 );
-        jLine( &a2ed[7], &a2ed[11], 128 ); jLine( &a2ed[11], &a2ed[9], 128 ); jLine( &a2ed[9], &a2ed[5], 128 );
+        jLine( &a2dd[0], &a2bd[0], 252 );   jLine( &a2dd[12], &a2bd[12], 252 ); jLine( &a2dd[1], &a2bd[1], 252 );
+        jLine( &a2dd[18], &a2bd[18], 252 ); jLine( &a2dd[16], &a2bd[16], 252 ); jLine( &a2dd[4], &a2bd[4], 252 );
+        jLine( &a2dd[14], &a2bd[14], 252 ); jLine( &a2dd[5], &a2bd[5], 252 );   jLine( &a2dd[17], &a2bd[17], 252);
+        jLine( &a2dd[19], &a2bd[19], 252 ); jLine( &a2dd[2], &a2bd[2], 252 );   jLine( &a2dd[3], &a2bd[3], 252 );
+        jLine( &a2dd[13], &a2bd[13], 252 ); jLine( &a2dd[16], &a2cd[16], 252 ); jLine( &a2dd[18], &a2cd[18], 252 );
+        jLine( &a2dd[6], &a2bd[6], 252 );   jLine( &a2dd[7], &a2bd[7], 252 );   jLine( &a2dd[15], &a2bd[15], 252 );
+        jLine( &a2dd[17], &a2cd[17], 252 ); jLine( &a2dd[19], &a2cd[19], 252 ); jLine( &a2dd[8], &a2bd[8], 252 );
+        jLine( &a2dd[4], &a2cd[4], 252 );   jLine( &a2dd[0], &a2cd[0], 252 );   jLine( &a2dd[12], &a2cd[12], 252 );
+        jLine( &a2dd[14], &a2cd[14], 252 ); jLine( &a2dd[6], &a2cd[6], 252 );   jLine( &a2dd[10], &a2bd[10], 252 );
+        jLine( &a2dd[2], &a2cd[2], 252 );   jLine( &a2dd[13], &a2cd[13], 252 ); jLine( &a2dd[15], &a2cd[15], 252 );
+        jLine( &a2dd[5], &a2cd[5], 252 );  jLine( &a2dd[9], &a2bd[9], 252 );   jLine( &a2dd[1], &a2cd[1], 252 );
+        jLine( &a2dd[12], &a2ed[12], 252 ); jLine( &a2dd[14], &a2ed[14], 252 ); jLine( &a2dd[7], &a2cd[7], 252 );
+        jLine( &a2dd[11], &a2bd[11], 252 ); jLine( &a2dd[3], &a2cd[3], 252 );   jLine( &a2dd[13], &a2ed[13], 252 );
+        jLine( &a2dd[15], &a2ed[15], 252 ); jLine( &a2dd[0], &a2ed[0], 252 );   jLine( &a2dd[16], &a2ed[16], 252 );
+        jLine( &a2dd[2], &a2ed[2], 252 );   jLine( &a2dd[10], &a2cd[10], 252 ); jLine( &a2dd[8], &a2cd[8], 252 );
+        jLine( &a2dd[4], &a2ed[4], 252 );   jLine( &a2dd[17], &a2ed[17], 252 ); jLine( &a2dd[6], &a2ed[6], 252 );
+        jLine( &a2dd[10], &a2ed[10], 252 ); jLine( &a2dd[8], &a2ed[8], 252 );   jLine( &a2dd[1], &a2ed[1], 252 );
+        jLine( &a2dd[3], &a2ed[3], 252 );   jLine( &a2dd[18], &a2ed[18], 252 ); jLine( &a2dd[11], &a2cd[11], 252 );
+        jLine( &a2dd[9], &a2cd[9], 252 );   jLine( &a2dd[5], &a2ed[5], 252 );   jLine( &a2dd[7], &a2ed[7], 252 );
+        jLine( &a2dd[9], &a2ed[9], 252 );   jLine( &a2dd[11], &a2ed[11], 252 ); jLine( &a2dd[19], &a2ed[19], 252 );
+        jLine( &a2bd[0], &a2bd[12], 252 ); jLine( &a2bd[12], &a2bd[1], 252 ); jLine( &a2bd[1], &a2bd[18], 252 );
+        jLine( &a2bd[18],&a2bd[16], 252 ); jLine( &a2bd[16], &a2bd[0], 252 ); jLine( &a2bd[4], &a2bd[14], 252 );
+        jLine( &a2bd[14],&a2bd[5], 252 );  jLine( &a2bd[5], &a2bd[19], 252 ); jLine( &a2bd[19],&a2bd[17], 252 );
+        jLine( &a2bd[17],&a2bd[4], 252 );  jLine( &a2bd[3], &a2bd[13], 252 ); jLine( &a2bd[13], &a2bd[2], 252 );
+        jLine( &a2bd[2], &a2cd[16], 252 ); jLine( &a2cd[16], &a2cd[18], 252); jLine( &a2cd[18], &a2bd[3], 252 );
+        jLine( &a2bd[7], &a2bd[15], 252 ); jLine( &a2bd[15], &a2bd[6], 252 ); jLine( &a2bd[6], &a2cd[17], 252 );
+        jLine( &a2cd[17], &a2cd[19], 252); jLine( &a2cd[19], &a2bd[7], 252 ); jLine( &a2cd[4], &a2bd[8] , 252 );
+        jLine( &a2bd[8],  &a2cd[0], 252 ); jLine( &a2cd[0], &a2cd[12], 252 ); jLine( &a2cd[12], &a2cd[14],252);
+        jLine( &a2cd[14], &a2cd[4], 252 ); jLine( &a2cd[6], &a2bd[10], 252 ); jLine( &a2bd[10], &a2cd[2], 252 );
+        jLine( &a2cd[2], &a2cd[13], 252 ); jLine( &a2cd[13],&a2cd[15], 252 ); jLine( &a2cd[15], &a2cd[6], 252 );
+        jLine( &a2cd[5], &a2bd[9], 252  ); jLine( &a2bd[9],  &a2cd[1], 252 ); jLine( &a2cd[1], &a2ed[12], 252 );
+        jLine( &a2ed[12], &a2ed[14], 252); jLine( &a2ed[14], &a2cd[5], 252 ); jLine( &a2cd[7], &a2bd[11], 252 );
+        jLine( &a2bd[11], &a2cd[3], 252 ); jLine( &a2cd[3], &a2ed[13], 252 ); jLine( &a2ed[13], &a2ed[15],252);
+        jLine( &a2ed[15], &a2cd[7], 252 ); jLine( &a2ed[0], &a2ed[16], 252 ); jLine( &a2ed[16], &a2ed[2], 252 );
+        jLine( &a2ed[2], &a2cd[10], 252 ); jLine( &a2cd[10], &a2cd[8], 252 ); jLine( &a2cd[8], &a2ed[0] , 252 );
+        jLine( &a2ed[4], &a2ed[17], 252 ); jLine( &a2ed[17], &a2ed[6], 252 ); jLine( &a2ed[6], &a2ed[10], 252 );
+        jLine( &a2ed[10], &a2ed[8], 252); jLine( &a2ed[8],  &a2ed[4], 252 ); jLine( &a2ed[1], &a2ed[18], 252 );
+        jLine( &a2ed[18], &a2ed[3], 252 ); jLine( &a2ed[3], &a2cd[11], 252 ); jLine( &a2cd[11], &a2cd[9], 252 );
+        jLine( &a2cd[9], &a2ed[1], 252  ); jLine( &a2ed[5], &a2ed[19], 252); jLine( &a2ed[19], &a2ed[7], 252 );
+        jLine( &a2ed[7], &a2ed[11], 252 ); jLine( &a2ed[11], &a2ed[9], 252 ); jLine( &a2ed[9], &a2ed[5], 252 );
 
     }
 
@@ -385,8 +413,11 @@ static gboolean drawFrame( GtkWidget *widget, GdkFrameClock *fclock, gpointer ud
 
     gtk_widget_queue_draw( widget );
 
+    //fillsub();
+
     return true;
 }
+
 
 static void activate( GtkApplication *app, gpointer udata )
 {
@@ -404,11 +435,14 @@ static void activate( GtkApplication *app, gpointer udata )
     g_signal_connect_swapped( button, "clicked", G_CALLBACK (gtk_window_destroy), window );
     gtk_fixed_put( GTK_FIXED (fpos), button, 690, 30 );
 
+
     pixels = gdk_pixbuf_new( GDK_COLORSPACE_RGB, TRUE, 8, 700, 700 );
     pix = gdk_pixbuf_get_pixels( pixels );
     for ( int x = 0; x < 700; x++ ) { for ( int y = 0; y < 700; y++ ) {
     guchar *p = pix + y * 2800 + x * 4;
-    p[0] = rr; p[1] = gg; p[2] = bb; p[3] = 252; } }
+    double r0 = 169 * rr; double g0 = 128 * gg; double b0 = 255 * bb;
+    p[0] = r0; p[1] = g0; p[2] = b0; p[3] = 252; } }
+
 
     dwRect = gtk_picture_new_for_pixbuf( pixels );
     gtk_picture_set_can_shrink( GTK_PICTURE (dwRect), FALSE );
@@ -437,21 +471,21 @@ static void activate( GtkApplication *app, gpointer udata )
     spr = gtk_separator_new( GTK_ORIENTATION_VERTICAL );
     g_object_set( spr, "height-request", 706, NULL ); gtk_fixed_put( GTK_FIXED (fpos), spr, 737, 97 );
 
-    sld_R = gtk_scale_new_with_range( GTK_ORIENTATION_HORIZONTAL, 1, 255, 1 );
+    sld_R = gtk_scale_new_with_range( GTK_ORIENTATION_HORIZONTAL, 1, 100, 1 );
     g_object_set( sld_R, "width-request", 139, NULL );
-    gtk_range_set_value ( GTK_RANGE (sld_R), rr );
+    gtk_range_set_value ( GTK_RANGE (sld_R), 100 );
     gtk_fixed_put( GTK_FIXED (fpos), sld_R, 30, 10 );
     g_signal_connect( GTK_WIDGET (sld_R), "change-value", G_CALLBACK (sldVChng), NULL );
 
-    sld_G = gtk_scale_new_with_range( GTK_ORIENTATION_HORIZONTAL, 1, 255, 1 );
+    sld_G = gtk_scale_new_with_range( GTK_ORIENTATION_HORIZONTAL, 1, 100, 1 );
     g_object_set( sld_G, "width-request", 139, NULL );
-    gtk_range_set_value ( GTK_RANGE (sld_G), gg );
+    gtk_range_set_value ( GTK_RANGE (sld_G), 100 );
     gtk_fixed_put( GTK_FIXED (fpos), sld_G, 30, 35 );
     g_signal_connect( GTK_WIDGET (sld_G), "change-value", G_CALLBACK (sldVChng), NULL );
 
-    sld_B = gtk_scale_new_with_range( GTK_ORIENTATION_HORIZONTAL, 1, 255, 1 );
+    sld_B = gtk_scale_new_with_range( GTK_ORIENTATION_HORIZONTAL, 1, 100, 1 );
     g_object_set( sld_B, "width-request", 139, NULL );
-    gtk_range_set_value ( GTK_RANGE (sld_B), bb );
+    gtk_range_set_value ( GTK_RANGE (sld_B), 100 );
     gtk_fixed_put( GTK_FIXED (fpos), sld_B, 30, 60 );
     g_signal_connect( GTK_WIDGET (sld_B), "change-value", G_CALLBACK (sldVChng), NULL );
 
@@ -479,6 +513,12 @@ static void activate( GtkApplication *app, gpointer udata )
     chk_Z = gtk_check_button_new_with_label( " z" );
     gtk_fixed_put( GTK_FIXED (fpos), chk_Z, 365, 60 );
     g_signal_connect( GTK_WIDGET (chk_Z), "toggled", G_CALLBACK (chkVChng), NULL );
+
+    swch0 = gtk_switch_new();
+    gtk_fixed_put( GTK_FIXED (fpos), swch0, 450, 20 );
+
+    swch1 = gtk_switch_new();
+    gtk_fixed_put( GTK_FIXED (fpos), swch1, 450, 55 );
 
     gtk_widget_show( window );
 
@@ -530,7 +570,6 @@ int main()
     app = gtk_application_new( "org.gtk.example", G_APPLICATION_FLAGS_NONE );
     g_signal_connect( app, "activate", G_CALLBACK (activate), NULL );
     status = g_application_run( G_APPLICATION (app), 0, 0 );
-
 
     g_object_unref( app ); g_object_unref( pixels ); return status;
 }
