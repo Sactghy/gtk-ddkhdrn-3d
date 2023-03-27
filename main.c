@@ -12,13 +12,13 @@ double cx = 0.998629534755, sy = 0.052335956243, phi = 1.618033988749, dds = 99.
 bool r_x = true, r_y = true, r_z = true, _x = true, _y = true, _z = true,
      _x_ = true, _y_ = true, _z_ = true, swst = true;
 
-struct Point2D { int mx,my,mz; bool is_visible; };
-struct Point3D { double mx,my,mz; unsigned char b,g,r; bool is_visible; };
+struct Vec2 { int mx,my,mz; bool is_visible; };
+struct Vec3 { double mx,my,mz; unsigned char b,g,r; bool is_visible; };
 
-struct Point3D d3d[20], d3d3[20], d3dd[20], d3bd[20], d3cd[20], d3ed[20], fp3d[20];
-struct Point2D a2d[20], a2d3[20], a2dd[20], a2bd[20], a2cd[20], a2ed[20], fp2d[20];
+struct Vec3 d3d[20], d3d3[20], d3dd[20], d3bd[20], d3cd[20], d3ed[20], fp3d[20];
+struct Vec2 a2d[20], a2d3[20], a2dd[20], a2bd[20], a2cd[20], a2ed[20], fp2d[20];
 
-struct Point3D centerP( struct Point3D a1, struct Point3D a2, struct Point3D b1, struct Point3D b2, struct Point3D c1)
+struct Vec3 centerP( struct Vec3 a1, struct Vec3 a2, struct Vec3 b1, struct Vec3 b2, struct Vec3 c1)
 {
     double p1 = a2.mx-a1.mx, m1 = a2.my-a1.my, l1 = a2.mz-a1.mz;
 
@@ -32,14 +32,14 @@ struct Point3D centerP( struct Point3D a1, struct Point3D a2, struct Point3D b1,
 
     double x2 = ( c1.mx + x1 ) / 2.0, y2 = ( c1.my + y1 ) / 2.0, z2 = ( c1.mz + z1 ) / 2.0;
 
-    struct Point3D res;
+    struct Vec3 res;
 
     res.mx = ( x2 + x1 ) / 2.0; res.my = ( y2 + y1 ) / 2.0; res.mz = ( z2 + z1 ) / 2.0;
 
     return res;
 }
 
-void jLine( struct Point2D *a, struct Point2D *b, guchar msk )
+void jLine( struct Vec2 *a, struct Vec2 *b, guchar msk )
 {
    int dx = abs( a->mx - b->mx ), dy = abs( a->my - b->my );
 
@@ -75,7 +75,7 @@ void jLine( struct Point2D *a, struct Point2D *b, guchar msk )
 
 }
 
-void rotate3Dyt( struct Point3D *p3d, double const cosa, double const sina, struct Point2D *p2d )
+void rotate3Dyt( struct Vec3 *p3d, double const cosa, double const sina, struct Vec2 *p2d )
 {
     double ry = 0, rz = 0;
     ry = ( p3d->my * cosa ) - ( p3d->mz * sina ); rz = ( p3d->mz * cosa ) + ( p3d->my * sina );
@@ -88,7 +88,7 @@ void rotate3Dyt( struct Point3D *p3d, double const cosa, double const sina, stru
     else p2d->is_visible=true;
 }
 
-void rotate3Dzt( struct Point3D *p3d, double const cosa, double const sina, struct Point2D *p2d )
+void rotate3Dzt( struct Vec3 *p3d, double const cosa, double const sina, struct Vec2 *p2d )
 {
     double rx = 0, ry = 0;
     rx = ( p3d->mx * cosa ) - ( p3d->my * sina ); ry = ( p3d->my * cosa ) + ( p3d->mx * sina );
@@ -101,7 +101,7 @@ void rotate3Dzt( struct Point3D *p3d, double const cosa, double const sina, stru
     else p2d->is_visible=true;
 }
 
-void rotate3Dxt( struct Point3D *p3d, double const cosa, double const sina, struct Point2D *p2d )
+void rotate3Dxt( struct Vec3 *p3d, double const cosa, double const sina, struct Vec2 *p2d )
 {
     double rx = 0, rz = 0;
     rx = ( p3d->mx * cosa ) + ( p3d->mz * sina ); rz = ( p3d->mz * cosa ) - ( p3d->mx * sina );
@@ -268,7 +268,7 @@ static gboolean drawFrame( GtkWidget *widget, GdkFrameClock *fclock, gpointer ud
 
     else {    if ( !swst ) { gtk_widget_set_state_flags( GTK_WIDGET (swch1), GTK_STATE_FLAG_INSENSITIVE, 0); swst = !swst; }
                 for ( int x = 0; x < 700; x++ ) { for ( int y = 0; y < 700; y++ ) {
-                guchar *p = pix + y * 2800 + x * 4; 
+                guchar *p = pix + y * 2800 + x * 4;
                 double r0 = 169 * rr; p[0] = r0;
                 double g0 = 128 * gg; p[1] = g0;
                 double b0 = 255 * bb; p[2] = b0;
