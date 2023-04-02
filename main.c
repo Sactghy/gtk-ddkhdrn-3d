@@ -520,7 +520,7 @@ static void activate( GtkApplication *app, gpointer udata )
     swch1 = gtk_switch_new();
     gtk_fixed_put( GTK_FIXED (fpos), swch1, 450, 55 );
 
-    gtk_widget_show( window );
+    gtk_widget_set_visible( window, TRUE );
 
       d3d[0].mx = lln; d3d[0].my = lln; d3d[0].mz = lln; d3d[1].mx = lln; d3d[1].my =-lln; d3d[1].mz = lln;
       d3d[2].mx = lln; d3d[2].my = lln; d3d[2].mz =-lln; d3d[3].mx = lln; d3d[3].my =-lln; d3d[3].mz =-lln;
