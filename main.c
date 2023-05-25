@@ -264,9 +264,7 @@ static gboolean drawFrame( GtkWidget *widget, GdkFrameClock *fclock, gpointer ud
 
      }
 
-    }
-
-    else {    if ( !swst ) { gtk_widget_set_state_flags( GTK_WIDGET (swch1), GTK_STATE_FLAG_INSENSITIVE, 0); swst = !swst; }
+    } else {    if ( !swst ) { gtk_widget_set_state_flags( GTK_WIDGET (swch1), GTK_STATE_FLAG_INSENSITIVE, 0); swst = !swst; }
                 for ( int x = 0; x < 700; x++ ) { for ( int y = 0; y < 700; y++ ) {
                 guchar *p = pix + y * 2800 + x * 4;
                 double r0 = 169 * rr; p[0] = r0;
