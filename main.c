@@ -7,7 +7,7 @@ GtkWidget *sld_R, *sld_G, *sld_B, *sld_X, *sld_Y, *chk_X, *chk_Y, *chk_Z, *swch0
 guchar *pix, oqins = 168;
 double cx = 0.998629534755, sy = 0.052335956243, phi = 1.618033988749, dds = 99.0, df = 0.0,
        cx1 = 0.992546151641, sy1 = 0.121869343405, c90 = 0.0, s90 = 1.0, lln = 235.0,
-       xshape = 1.0, scale = 900.00, scc = 0, scl = 300.0, rr = 1, gg = 1, bb = 1,
+       xshape = 1.0, scale = 900.00, scc = 0, scl = 300.0, rr = 1, gg = 1, bb = 1, rk, gk, bk,
        ca = 0, sa = 0, cb = 0, sb = 0, cq = 0, sq = 0, anX = 0, anY = 0, anZ = 0;
 bool r_x = true, r_y = true, r_z = true, _x = true, _y = true, _z = true,
      _x_ = true, _y_ = true, _z_ = true, swst = true;
@@ -254,8 +254,9 @@ static gboolean drawFrame( GtkWidget *widget, GdkFrameClock *fclock, gpointer ud
         p[1] = (double)( p[1] + ( rand() & 0b00001111 ) ) * gg; //g0;
         p[2] = (double)( p[2] + ( rand() & 0b00001111 ) ) * bb; //b0;
         p[3] = 252;
-    } } } else {     for ( int x = 0; x < 700; x++ ) { for ( int y = 0; y < 700; y++ ) {
+    } } } else { for ( int x = 0; x < 700; x++ ) { for ( int y = 0; y < 700; y++ ) {
                  guchar *p = pix + y * 2800 + x * 4;
+
                  p[0] = (double)( p[0] + ( rand() & 0b00001111 ) );
                  p[1] = (double)( p[1] + ( rand() & 0b00001111 ) );
                  p[2] = (double)( p[2] + ( rand() & 0b00001111 ) );
@@ -264,12 +265,21 @@ static gboolean drawFrame( GtkWidget *widget, GdkFrameClock *fclock, gpointer ud
 
      }
 
-    } else {    if ( !swst ) { gtk_widget_set_state_flags( GTK_WIDGET (swch1), GTK_STATE_FLAG_INSENSITIVE, 0); swst = !swst; }
+    }
+
+    else {    if ( !swst ) { gtk_widget_set_state_flags( GTK_WIDGET (swch1), GTK_STATE_FLAG_INSENSITIVE, 0); swst = !swst; }
                 for ( int x = 0; x < 700; x++ ) { for ( int y = 0; y < 700; y++ ) {
                 guchar *p = pix + y * 2800 + x * 4;
-                double r0 = 169 * rr; p[0] = r0;
-                double g0 = 128 * gg; p[1] = g0;
-                double b0 = 255 * bb; p[2] = b0;
+
+                double xx = x - 350, yy = y - 350, dd = sqrt((xx * xx) + (yy * yy));
+
+                rk = ( dd < 101 ) ? 0 : ( dd < 303 ) ? ( dd - 101 ) / ( 303 - 101 ) : 1;
+                gk = 1 - rk;
+                bk = 1 - (rk + gk) * gk;
+
+                double r0 = 169 * rr * rk; p[0] = r0;
+                double g0 = 128 * gg * gk; p[1] = g0;
+                double b0 = 255 * bb * bk; p[2] = b0;
                 p[3] = 252; } }
 
          }
