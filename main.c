@@ -7,7 +7,7 @@ GtkWidget *sld_R, *sld_G, *sld_B, *sld_X, *sld_Y, *chk_X, *chk_Y, *chk_Z, *swch0
 guchar *pix, oqins = 168;
 double cx = 0.998629534755, sy = 0.052335956243, phi = 1.618033988749, dds = 99.0, df = 0.0,
        cx1 = 0.992546151641, sy1 = 0.121869343405, c90 = 0.0, s90 = 1.0, lln = 235.0,
-       xshape = 1.0, scale = 900.00, scc = 0, scl = 300.0, rr = 1, gg = 1, bb = 1, rk, gk, bk,
+       xshape = 1.0, scale = 900.00, scc = 0, scl = 300.0, rr = 0, gg = 1, bb = 0.5, rk, gk, bk,
        ca = 0, sa = 0, cb = 0, sb = 0, cq = 0, sq = 0, anX = 0, anY = 0, anZ = 0;
 bool r_x = true, r_y = true, r_z = true, _x = true, _y = true, _z = true,
      _x_ = true, _y_ = true, _z_ = true, swst = true;
@@ -245,9 +245,8 @@ static gboolean drawFrame( GtkWidget *widget, GdkFrameClock *fclock, gpointer ud
 
     if ( issw0 ) { if ( swst ) { if ( issw1 ) gtk_widget_set_state_flags( GTK_WIDGET (swch1), GTK_STATE_FLAG_CHECKED, 1);
                                  else gtk_widget_set_state_flags( GTK_WIDGET (swch1), GTK_STATE_FLAG_NORMAL, 1);
-
-            swst = !swst; }
-     if ( issw1 ) {
+                                 swst = !swst; }
+    if ( issw1 ) {
     for ( int x = 0; x < 700; x++ ) { for ( int y = 0; y < 700; y++ ) {
         guchar *p = pix + y * 2800 + x * 4;
         p[0] = (double)( p[0] + ( rand() & 0b00001111 ) ) * rr; //r0;
@@ -256,23 +255,20 @@ static gboolean drawFrame( GtkWidget *widget, GdkFrameClock *fclock, gpointer ud
         p[3] = 252;
     } } } else { for ( int x = 0; x < 700; x++ ) { for ( int y = 0; y < 700; y++ ) {
                  guchar *p = pix + y * 2800 + x * 4;
-
                  p[0] = (double)( p[0] + ( rand() & 0b00001111 ) );
                  p[1] = (double)( p[1] + ( rand() & 0b00001111 ) );
                  p[2] = (double)( p[2] + ( rand() & 0b00001111 ) );
                  p[3] = 252;
-             } }
-
-     }
-
+             } } }
     }
 
     else {    if ( !swst ) { gtk_widget_set_state_flags( GTK_WIDGET (swch1), GTK_STATE_FLAG_INSENSITIVE, 0); swst = !swst; }
+
                 for ( int x = 0; x < 700; x++ ) { for ( int y = 0; y < 700; y++ ) {
+
                 guchar *p = pix + y * 2800 + x * 4;
 
                 double xx = x - 350, yy = y - 350, dd = sqrt((xx * xx) + (yy * yy));
-
                 rk = ( dd < 101 ) ? 0 : ( dd < 303 ) ? ( dd - 101 ) / ( 303 - 101 ) : 1;
                 gk = 1 - rk;
                 bk = 1 - (rk + gk) * gk;
@@ -481,7 +477,7 @@ static void activate( GtkApplication *app, gpointer udata )
 
     sld_R = gtk_scale_new_with_range( GTK_ORIENTATION_HORIZONTAL, 1, 100, 1 );
     g_object_set( sld_R, "width-request", 139, NULL );
-    gtk_range_set_value ( GTK_RANGE (sld_R), 100 );
+    gtk_range_set_value ( GTK_RANGE (sld_R), 1 );
     gtk_fixed_put( GTK_FIXED (fpos), sld_R, 30, 10 );
     g_signal_connect( GTK_WIDGET (sld_R), "change-value", G_CALLBACK (sldVChng), NULL );
 
@@ -493,7 +489,7 @@ static void activate( GtkApplication *app, gpointer udata )
 
     sld_B = gtk_scale_new_with_range( GTK_ORIENTATION_HORIZONTAL, 1, 100, 1 );
     g_object_set( sld_B, "width-request", 139, NULL );
-    gtk_range_set_value ( GTK_RANGE (sld_B), 100 );
+    gtk_range_set_value ( GTK_RANGE (sld_B), 50 );
     gtk_fixed_put( GTK_FIXED (fpos), sld_B, 30, 60 );
     g_signal_connect( GTK_WIDGET (sld_B), "change-value", G_CALLBACK (sldVChng), NULL );
 
