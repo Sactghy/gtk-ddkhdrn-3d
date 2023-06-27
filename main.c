@@ -5,9 +5,9 @@
 GdkPixbuf *pixels;
 GtkWidget *sld_R, *sld_G, *sld_B, *sld_X, *sld_Y, *chk_X, *chk_Y, *chk_Z, *swch0, *swch1;
 guchar *pix, oqins = 168;
-double cx = 0.998629534755, sy = 0.052335956243, phi = 1.618033988749, dds = 99.0, df = 0.0,
+double cx = 0.998629534755, sy = 0.052335956243, phi = 1.618033988749, dds = 66.0, df = 0.0,
        cx1 = 0.992546151641, sy1 = 0.121869343405, c90 = 0.0, s90 = 1.0, lln = 235.0,
-       xshape = 1.0, scale = 900.00, scc = 0, scl = 300.0, rr = 0, gg = 1, bb = 0.5, rk, gk, bk,
+       xshape = 1.0, scale = 900.00, scc = 0, scl = 300.0, rr = 1.0, gg = 0.1, bb = 0.5, rk, gk, bk,
        ca = 0, sa = 0, cb = 0, sb = 0, cq = 0, sq = 0, anX = 0, anY = 0, anZ = 0;
 bool r_x = true, r_y = true, r_z = true, _x = true, _y = true, _z = true,
      _x_ = true, _y_ = true, _z_ = true, swst = true;
@@ -45,7 +45,7 @@ void jLine( struct Vec2 *a, struct Vec2 *b, guchar msk )
 
    int add = 0, slope = 9999, rmd = 6666, pos = 0, kx = 0, ky = 0;
 
-   guchar cR = (double)(255) * ( 1 - rr ), cG = (double)(255) * ( 1 - gg ), cB = (double)(255) * ( 1 - bb );
+   guchar cR = (double)(255) * ( 1 - rr ), cG = 255 - cR, cB = (double)(255) * ( 1 - bb );
 
    double sl = 0, ss = 0;
 
@@ -145,6 +145,11 @@ static void chkVChng( GtkCheckButton* self )
 
 }
 
+void somelines( gdouble value )
+{
+
+}
+
 static gboolean sldVChng( GtkRange* self, gdouble value )
 {
 
@@ -238,6 +243,7 @@ static gboolean sldVChng( GtkRange* self, gdouble value )
 }
 
 
+
 static gboolean drawFrame( GtkWidget *widget, GdkFrameClock *fclock, gpointer udata )
 {
     gboolean issw0 = gtk_switch_get_state ( GTK_SWITCH (swch0) ),
@@ -268,13 +274,15 @@ static gboolean drawFrame( GtkWidget *widget, GdkFrameClock *fclock, gpointer ud
 
                 guchar *p = pix + y * 2800 + x * 4;
 
-                double xx = x - 350, yy = y - 350, dd = sqrt((xx * xx) + (yy * yy));
+                double xx = x - 350, yy = y - 350, dd = sqrt( (xx * xx) + (yy * yy) ), dk = tan(dd/350), dn;
+
+                if ( dd > 256 ) dn = 0; else dn = tan ( dd / log(dk) ) * 0.0069;
                 rk = ( dd < 101 ) ? 0 : ( dd < 303 ) ? ( dd - 101 ) / ( 303 - 101 ) : 1;
                 gk = 1 - rk;
                 bk = 1 - (rk + gk) * gk;
 
-                double r0 = 169 * rr * rk; p[0] = r0;
-                double g0 = 128 * gg * gk; p[1] = g0;
+                double r0 = 169 * ( rr * dk) * rk; p[0] = r0;
+                double g0 = 128 * ( gg * dn ) * gk; p[1] = g0;
                 double b0 = 255 * bb * bk; p[2] = b0;
                 p[3] = 252; } }
 
@@ -477,13 +485,13 @@ static void activate( GtkApplication *app, gpointer udata )
 
     sld_R = gtk_scale_new_with_range( GTK_ORIENTATION_HORIZONTAL, 1, 100, 1 );
     g_object_set( sld_R, "width-request", 139, NULL );
-    gtk_range_set_value ( GTK_RANGE (sld_R), 1 );
+    gtk_range_set_value ( GTK_RANGE (sld_R), 100 );
     gtk_fixed_put( GTK_FIXED (fpos), sld_R, 30, 10 );
     g_signal_connect( GTK_WIDGET (sld_R), "change-value", G_CALLBACK (sldVChng), NULL );
 
-    sld_G = gtk_scale_new_with_range( GTK_ORIENTATION_HORIZONTAL, 1, 100, 1 );
+    sld_G = gtk_scale_new_with_range( GTK_ORIENTATION_HORIZONTAL, 1, 42, 1 );
     g_object_set( sld_G, "width-request", 139, NULL );
-    gtk_range_set_value ( GTK_RANGE (sld_G), 100 );
+    gtk_range_set_value ( GTK_RANGE (sld_G), 10 );
     gtk_fixed_put( GTK_FIXED (fpos), sld_G, 30, 35 );
     g_signal_connect( GTK_WIDGET (sld_G), "change-value", G_CALLBACK (sldVChng), NULL );
 
@@ -495,14 +503,15 @@ static void activate( GtkApplication *app, gpointer udata )
 
     sld_X = gtk_scale_new_with_range( GTK_ORIENTATION_HORIZONTAL, 0, 690, 1 );
     g_object_set( sld_X, "width-request", 139, NULL );
-    gtk_range_set_value ( GTK_RANGE (sld_X), 690 );
+    gtk_range_set_value ( GTK_RANGE (sld_X), 345 );
     gtk_fixed_put( GTK_FIXED (fpos), sld_X, 190, 22.5 );
     g_signal_connect( GTK_WIDGET (sld_X), "change-value", G_CALLBACK (sldVChng), NULL );
+
 
     sld_Y = gtk_scale_new_with_range( GTK_ORIENTATION_HORIZONTAL, 23, 100, 1 );
     g_object_set( sld_Y, "width-request", 139, NULL );
     gtk_range_set_value ( GTK_RANGE (sld_Y), 100 );
-    gtk_widget_set_state_flags( GTK_WIDGET (sld_Y), GTK_STATE_FLAG_INSENSITIVE, 0);
+    //gtk_widget_set_state_flags( GTK_WIDGET (sld_Y), GTK_STATE_FLAG_INSENSITIVE, 0);
     gtk_fixed_put( GTK_FIXED (fpos), sld_Y, 190, 47.5 );
     g_signal_connect( GTK_WIDGET (sld_Y), "change-value", G_CALLBACK (sldVChng), NULL );
 
@@ -565,6 +574,8 @@ static void activate( GtkApplication *app, gpointer udata )
       fp3d[9].mx =-fp3d[8].mx; fp3d[9].my = fp3d[8].my; fp3d[9].mz = fp3d[8].mz;
       fp3d[10].mx= fp3d[8].mx; fp3d[10].my=-fp3d[8].my; fp3d[10].mz= fp3d[8].mz;
       fp3d[11].mx=-fp3d[8].mx; fp3d[11].my=-fp3d[8].my; fp3d[11].mz= fp3d[8].mz;
+
+      sldVChng( (GtkRange*) sld_X, 345 );
 
 }
 
