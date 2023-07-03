@@ -5,6 +5,7 @@
 GdkPixbuf *pixels;
 GtkWidget *sld_R, *sld_G, *sld_B, *sld_X, *sld_Y, *chk_X, *chk_Y, *chk_Z, *swch0, *swch1;
 guchar *pix, oqins = 168;
+guchar cR, cG, cB;
 double cx = 0.998629534755, sy = 0.052335956243, phi = 1.618033988749, dds = 66.0, df = 0.0,
        cx1 = 0.992546151641, sy1 = 0.121869343405, c90 = 0.0, s90 = 1.0, lln = 235.0,
        xshape = 1.0, scale = 900.00, scc = 0, scl = 300.0, rr = 1.0, gg = 0.1, bb = 0.5, rk, gk, bk,
@@ -45,8 +46,6 @@ void jLine( struct Vec2 *a, struct Vec2 *b, guchar msk )
 
    int add = 0, slope = 9999, rmd = 6666, pos = 0, kx = 0, ky = 0;
 
-   guchar cR = (double)(255) * ( 1 - rr ), cG = 255 - cR, cB = (double)(255) * ( 1 - bb );
-
    double sl = 0, ss = 0;
 
    if ( ( dx != 0 ) || ( dy != 0 ) ) {
@@ -61,7 +60,17 @@ void jLine( struct Vec2 *a, struct Vec2 *b, guchar msk )
 
    guchar *p = pix + ( ( a->my + ( ky * add ) ) * 700 + a->mx + ( kx * i ) ) * 4;
 
-   if ( ( p[3] < 253 ) ) { p[0] = cR; p[1] = cG; p[2] = cB; p[3] = msk; } } }
+   if ( ( p[3] < 253 ) ) { p[0] = cR; p[1] = cG; p[2] = cB; p[3] = msk; }
+
+   p -= 700 * 4; if ( p[3] < 252 ) { p[0] += 65; p[1] += 65; p[2] += 65; p[3] = 252; }
+
+   p -= 700 * 4; if ( p[3] < 252 ) { p[0] += 48; p[1] += 48; p[2] += 48; p[3] = 252; }
+
+   p += 700 * 4 + 700 * 4 + 700 * 4; if ( p[3] < 252 ) { p[0] += 65; p[1] += 65; p[2] += 65; p[3] = 252; }
+
+   p += 700 * 4; if ( p[3] < 252 ) { p[0] += 48; p[1] += 48; p[2] += 48; p[3] = 252; }
+
+   } }
 
    else { if ( dx != 0 ) { sl = (double)(dy) / (double)(dx); slope = dy / dx;  ss = sl; rmd = slope; }
 
@@ -71,7 +80,17 @@ void jLine( struct Vec2 *a, struct Vec2 *b, guchar msk )
 
    guchar *p = pix + ( ( a->my + ( ky * i ) ) * 700 + a->mx + ( kx * add ) ) * 4;
 
-   if ( ( p[3] < 253 ) ) { p[0] = cR; p[1] = cG; p[2] = cB;  p[3] = msk; } } } }
+   if ( ( p[3] < 253 ) ) { p[0] = cR; p[1] = cG; p[2] = cB;  p[3] = msk; }
+
+   p -= 1 * 4; if ( p[3] < 252 ) { p[0] += 65; p[1] += 65; p[2] += 65; p[3] = 252; }
+
+   p -= 1 * 4; if ( p[3] < 252 ) { p[0] += 48; p[1] += 48; p[2] += 48; p[3] = 252; }
+
+   p += 3 * 4; if ( p[3] < 252 ) { p[0] += 65; p[1] += 65; p[2] += 65; p[3] = 252; }
+
+   p += 1 * 4; if ( p[3] < 252 ) { p[0] += 48; p[1] += 48; p[2] += 48; p[3] = 252; }
+
+   } } }
 
 }
 
@@ -249,6 +268,8 @@ static gboolean drawFrame( GtkWidget *widget, GdkFrameClock *fclock, gpointer ud
     gboolean issw0 = gtk_switch_get_state ( GTK_SWITCH (swch0) ),
              issw1 = gtk_switch_get_state ( GTK_SWITCH (swch1) );
 
+       cR = (double)(255) * ( 1 - rr ), cG = 255 - cR, cB = (double)(255) * ( 1 - bb );
+
     if ( issw0 ) { if ( swst ) { if ( issw1 ) gtk_widget_set_state_flags( GTK_WIDGET (swch1), GTK_STATE_FLAG_CHECKED, 1);
                                  else gtk_widget_set_state_flags( GTK_WIDGET (swch1), GTK_STATE_FLAG_NORMAL, 1);
                                  swst = !swst; }
@@ -258,13 +279,20 @@ static gboolean drawFrame( GtkWidget *widget, GdkFrameClock *fclock, gpointer ud
         p[0] = (double)( p[0] + ( rand() & 0b00001111 ) ) * rr; //r0;
         p[1] = (double)( p[1] + ( rand() & 0b00001111 ) ) * gg; //g0;
         p[2] = (double)( p[2] + ( rand() & 0b00001111 ) ) * bb; //b0;
-        p[3] = 252;
+        p[3] = 251;
     } } } else { for ( int x = 0; x < 700; x++ ) { for ( int y = 0; y < 700; y++ ) {
                  guchar *p = pix + y * 2800 + x * 4;
-                 p[0] = (double)( p[0] + ( rand() & 0b00001111 ) );
-                 p[1] = (double)( p[1] + ( rand() & 0b00001111 ) );
-                 p[2] = (double)( p[2] + ( rand() & 0b00001111 ) );
-                 p[3] = 252;
+
+                 if ( p[3] < 252 ) {
+                 p[0] = (double)( p[0] + ( rand() & 0b00000111 ) );
+                 p[1] = (double)( p[1] + ( rand() & 0b00000111 ) );
+                 p[2] = (double)( p[2] + ( rand() & 0b00000111 ) );
+                 p[3] = 251; } else {
+
+                     p[0] = (double)( p[0] - ( rand() & 0b00001111 ) );
+                     p[1] = (double)( p[1] - ( rand() & 0b00001111 ) );
+                     p[2] = (double)( p[2] - ( rand() & 0b00001111 ) );
+                     p[3] = 252;}
              } } }
     }
 
@@ -284,7 +312,7 @@ static gboolean drawFrame( GtkWidget *widget, GdkFrameClock *fclock, gpointer ud
                 double r0 = 169 * ( rr * dk) * rk; p[0] = r0;
                 double g0 = 128 * ( gg * dn ) * gk; p[1] = g0;
                 double b0 = 255 * bb * bk; p[2] = b0;
-                p[3] = 252; } }
+                p[3] = 251; } }
 
          }
 
