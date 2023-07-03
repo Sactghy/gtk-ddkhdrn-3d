@@ -304,7 +304,7 @@ static gboolean drawFrame( GtkWidget *widget, GdkFrameClock *fclock, gpointer ud
 
                 double xx = x - 350, yy = y - 350, dd = sqrt( (xx * xx) + (yy * yy) ), dk = tan(dd/350), dn;
 
-                if ( dd > 256 ) dn = 0; else dn = tan ( dd / log(dk) ) * 0.0069;
+                if ( dd > 256 ) dn = 0; else dn = tan ( dd / log(dk) ) * 0.0099;
                 rk = ( dd < 101 ) ? 0 : ( dd < 303 ) ? ( dd - 101 ) / ( 303 - 101 ) : 1;
                 gk = 1 - rk;
                 bk = 1 - (rk + gk) * gk;
