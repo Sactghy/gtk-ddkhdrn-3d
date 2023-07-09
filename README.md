@@ -4,14 +4,14 @@ A regular dodecahedron which is able to transform itself into a small stellated 
 
 Compilation :
 
-  cd dirname
+    cd dirname
   
-  git clone https://github.com/a1x9jb4n0w/gtk4-ddchdrn-3d
+    git clone https://github.com/a1x9jb4n0w/gtk4-ddchdrn-3d
   
-  cd gtk4-ddchdrn-3d
+    cd gtk4-ddchdrn-3d
   
-  cmake ./
+    cmake ./
   
-  make
+    make
   
-  ./gddc3d 
+    ./gddc3d 
